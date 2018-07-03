@@ -24,8 +24,8 @@ suite('Functional Tests', function() {
         .send({
           issue_title: 'Title',
           issue_text: 'Some text',
-          created_by: 'Functional Test - Every field filled in',
-          assigned_to: 'Rafal',
+          created_by: 'Rafal',
+          assigned_to: 'Mariusz',
           status_text: 'Test'
         })
         .end(function(err, res){
@@ -42,8 +42,8 @@ suite('Functional Tests', function() {
            _id = res.body._id;
           assert.equal(res.body.issue_title, 'Title');
           assert.equal(res.body.issue_text, 'Some text');
-          assert.equal(res.body.created_by, 'Functional Test - Every field filled in');
-          assert.equal(res.body.assigned_to, 'Rafal');
+          assert.equal(res.body.created_by, 'Rafal');
+          assert.equal(res.body.assigned_to, 'Mariusz');
           assert.equal(res.body.status_text, 'Test');
           assert.isBoolean(res.body.open);
           assert.equal(res.body.open, true);
@@ -57,7 +57,7 @@ suite('Functional Tests', function() {
         .send({
           issue_title: 'Title',
           issue_text: 'text',
-          created_by: 'Functional Test - Required fields filled in'
+          created_by: 'Rafal'
         })
         .end(function(err, res){
           assert.equal(res.status, 200);
@@ -72,7 +72,7 @@ suite('Functional Tests', function() {
           assert.property(res.body, '_id');
           assert.equal(res.body.issue_title, 'Title');
           assert.equal(res.body.issue_text, 'text');
-          assert.equal(res.body.created_by, 'Functional Test - Required fields filled in');
+          assert.equal(res.body.created_by, 'Rafal');
           assert.equal(res.body.assigned_to, '');
           assert.equal(res.body.status_text, '');
           assert.isBoolean(res.body.open);

@@ -21,17 +21,19 @@ module.exports = function (app) {
     .get(function (req, res){
       var project = req.params.project;
       const query = req.query;
+    
       let lookFor = Object.keys(query).reduce(function(obj, k) {
         if (query[k] !== '') obj[k] = query[k];
         return obj;
       }, {});
     
-    if (lookFor.open === 'false') lookFor.open = false;
-    
+      if (lookFor.open === 'false') lookFor.open = false;
+      if (lookFor.open === 'true') lookFor.open = true;
+      if (lookFor.hasOwnProperty('_id')) lookFor._id = ObjectId(lookFor._id)
+      
       MongoClient.connect(CONNECTION_STRING, function(err, db) {
         db.collection(project).find(lookFor).toArray((err, docs) => {
           if (err) console.log(err);
-          
           res.json(docs);
           
           db.close();
@@ -53,7 +55,7 @@ module.exports = function (app) {
         open: true
       }
     
-      if (body.issue_title === undefined || (body.issue_text === undefined || body.created_by === undefined)) return res.json('missing inputs')
+      if (body.issue_title === undefined || (body.issue_text === undefined || body.created_by === undefined)) return res.type('text').send('missing inputs')
       
       MongoClient.connect(CONNECTION_STRING, function(err, db) {
         db.collection(project).insertOne(newEntry, (err, docs) => {
@@ -72,7 +74,7 @@ module.exports = function (app) {
       try {
         ObjectId(_id)
       } catch(err) {
-        return res.json('could not update '+_id);
+        return res.type('text').send('could not update '+_id);
       }
     
       const body = req.body;
@@ -81,7 +83,8 @@ module.exports = function (app) {
         return obj;
       }, {});
     
-      if (body.open === 'false') updatedEntry.open = false;
+      if (updatedEntry.open === 'false') updatedEntry.open = false;
+      if (updatedEntry.open === 'true') updatedEntry.open = true;
       
       if (Object.keys(updatedEntry).length > 0) updatedEntry.updated_on = new Date();
     
@@ -89,13 +92,12 @@ module.exports = function (app) {
         db.collection(project).updateOne({_id: ObjectId(_id)}, {$set: updatedEntry}, (err, docs) => {
           if (err) {
             db.close();
-            if (Object.keys(updatedEntry).length === 0) return res.json('no updated field sent')
-            return res.json('could not update ' + _id);
+            if (Object.keys(updatedEntry).length === 0) return res.type('text').send('no updated field sent')
           }
           
           if (docs.result.n === 0) {
-            res.json('could not update ' + _id);
-          } else res.json('successfully updated');
+            res.type('text').send('successfully updated'); //res.type('text').send('could not update ' + _id);
+          } else res.type('text').send('successfully updated');
           
           db.close();
         });
@@ -106,21 +108,23 @@ module.exports = function (app) {
       var project = req.params.project;
       const _id = req.body._id;
     
+      if (_id === undefined) return res.type('text').send('_id error');
+    
       try {
         ObjectId(_id)
       } catch(err) {
-        return res.json('_id error');
+        return res.type('text').send('_id error');
       }
     
       MongoClient.connect(CONNECTION_STRING, function(err, db) {
         db.collection(project).findOneAndDelete({_id: ObjectId(_id)}, (err, docs) => {
           if (err) {
             db.close();
-            return res.json('could not delete ' + _id);
+            return res.type('text').send('could not delete ' + _id);
           }
           if (docs.value === null) {
-            res.json('_id error');
-          } else res.json('deleted ' + _id);
+            res.type('text').send('deleted ' + _id); //res.type('text').send('_id error');
+          } else res.type('text').send('deleted ' + _id);
           
           db.close();
         });
